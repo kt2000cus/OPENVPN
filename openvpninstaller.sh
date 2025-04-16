@@ -44,14 +44,25 @@ echo "Copying certificates and keys to /etc/openvpn..."
 sudo cp pki/ca.crt pki/issued/$SERVER_NAME.crt pki/private/$SERVER_NAME.key pki/dh.pem ta.key /etc/openvpn/
 
 echo "Copying sample server.conf..."
-if [ -f /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz ]; then
-    sudo gunzip -c /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz | sudo tee /etc/openvpn/server.conf > /dev/null
-elif [ -f /usr/share/doc/openvpn/examples/sample-config-files/server.conf ]; then
-    sudo cp /usr/share/doc/openvpn/examples/sample-config-files/server.conf /etc/openvpn/server.conf
-else
-    echo "No sample server.conf found! Please create /etc/openvpn/server.conf manually."
-    exit 1
-fi
+MINIMAL_CONF="port 1194
+proto udp
+dev tun
+ca ca.crt
+cert server.crt
+key server.key
+dh dh.pem
+tls-auth ta.key 0
+server 10.8.0.0 255.255.255.0
+ifconfig-pool-persist /var/log/openvpn/ipp.txt
+keepalive 10 120
+persist-key
+persist-tun
+status /var/log/openvpn/openvpn-status.log
+verb 3
+explicit-exit-notify 1
+"
+echo "$MINIMAL_CONF" | sudo tee /etc/openvpn/server.conf > /dev/null
+echo "A minimal config has been created at /etc/openvpn/server.conf. Please review it."
 
 echo "Enabling IP forwarding..."
 sudo sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf
