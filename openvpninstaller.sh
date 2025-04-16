@@ -64,6 +64,28 @@ explicit-exit-notify 1
 echo "$MINIMAL_CONF" | sudo tee /etc/openvpn/server.conf > /dev/null
 echo "A minimal config has been created at /etc/openvpn/server.conf. Please review it."
 
+# Create a minimal client1.conf for client use
+CLIENT_CONF="client
+proto udp
+remote YOUR_SERVER_IP 1194
+dev tun
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+remote-cert-tls server
+ca ca.crt
+cert client1.crt
+key client1.key
+tls-auth ta.key 1
+cipher AES-256-CBC
+verb 3
+pull
+redirect-gateway def1 bypass-dhcp
+"
+echo "$CLIENT_CONF" | sudo tee /etc/openvpn/client1.conf > /dev/null
+echo "A minimal client config has been created at /etc/openvpn/client1.conf. Please review it and replace YOUR_SERVER_IP with your server's public IP or DNS name."
+
 echo "Enabling IP forwarding..."
 sudo sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf
 sudo sysctl -p
