@@ -44,7 +44,14 @@ echo "Copying certificates and keys to /etc/openvpn..."
 sudo cp pki/ca.crt pki/issued/$SERVER_NAME.crt pki/private/$SERVER_NAME.key pki/dh.pem ta.key /etc/openvpn/
 
 echo "Copying sample server.conf..."
-sudo gunzip -c /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz | sudo tee /etc/openvpn/server.conf > /dev/null
+if [ -f /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz ]; then
+    sudo gunzip -c /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz | sudo tee /etc/openvpn/server.conf > /dev/null
+elif [ -f /usr/share/doc/openvpn/examples/sample-config-files/server.conf ]; then
+    sudo cp /usr/share/doc/openvpn/examples/sample-config-files/server.conf /etc/openvpn/server.conf
+else
+    echo "No sample server.conf found! Please create /etc/openvpn/server.conf manually."
+    exit 1
+fi
 
 echo "Enabling IP forwarding..."
 sudo sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf
